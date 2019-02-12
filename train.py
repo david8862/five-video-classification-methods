@@ -13,7 +13,7 @@ def train(data_type, seq_length, model, saved_model=None,
     # Helper: Save the model.
     checkpointer = ModelCheckpoint(
         filepath=os.path.join('data', 'checkpoints', model + '-' + data_type + \
-            '.{epoch:03d}-{val_loss:.3f}.hdf5'),
+            '.{epoch:03d}-{val_loss:.3f}-{val_acc:.2f}.hdf5'),
         verbose=1,
         save_best_only=True)
 
@@ -21,7 +21,7 @@ def train(data_type, seq_length, model, saved_model=None,
     tb = TensorBoard(log_dir=os.path.join('data', 'logs', model))
 
     # Helper: Stop when we stop learning.
-    early_stopper = EarlyStopping(patience=5)
+    early_stopper = EarlyStopping(patience=30)
 
     # Helper: Save results.
     timestamp = time.time()
@@ -84,9 +84,9 @@ def main():
     """These are the main training settings. Set each before running
     this file."""
     # model can be one of lstm, lrcn, mlp, conv_3d, c3d
-    model = 'lstm'
+    model = 'mlp'
     saved_model = None  # None or weights file
-    class_limit = None  # int, can be 1-101 or None
+    class_limit = 10  # int, can be 1-101 or None
     seq_length = 40
     load_to_memory = False  # pre-load the sequences into memory
     batch_size = 32
@@ -96,7 +96,7 @@ def main():
     if model in ['conv_3d', 'c3d', 'lrcn']:
         data_type = 'images'
         image_shape = (80, 80, 3)
-    elif model in ['lstm', 'mlp']:
+    elif model in ['lstm', 'gru','mlp']:
         data_type = 'features'
         image_shape = None
     else:

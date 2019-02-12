@@ -2,7 +2,7 @@
 A collection of models we'll use to attempt to classify videos.
 """
 from tensorflow.keras.layers import Dense, Flatten, Dropout, ZeroPadding3D
-from tensorflow.keras.layers import LSTM
+from tensorflow.keras.layers import LSTM, GRU
 from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.optimizers import Adam, RMSprop
 from tensorflow.keras.layers import TimeDistributed
@@ -16,6 +16,7 @@ class ResearchModels():
         """
         `model` = one of:
             lstm
+            gru
             lrcn
             mlp
             conv_3d
@@ -45,6 +46,10 @@ class ResearchModels():
             print("Loading LSTM model.")
             self.input_shape = (seq_length, features_length)
             self.model = self.lstm()
+        elif model == 'gru':
+            print("Loading GRU model.")
+            self.input_shape = (seq_length, features_length)
+            self.model = self.gru()
         elif model == 'lrcn':
             print("Loading CNN-LSTM model.")
             self.input_shape = (seq_length, 80, 80, 3)
@@ -78,6 +83,20 @@ class ResearchModels():
         # Model.
         model = Sequential()
         model.add(LSTM(2048, return_sequences=False,
+                       input_shape=self.input_shape,
+                       dropout=0.5))
+        model.add(Dense(512, activation='relu'))
+        model.add(Dropout(0.5))
+        model.add(Dense(self.nb_classes, activation='softmax'))
+
+        return model
+
+    def gru(self):
+        """Build a simple GRU network. We pass the extracted features from
+        our CNN to this model predomenently."""
+        # Model.
+        model = Sequential()
+        model.add(GRU(2048, return_sequences=False,
                        input_shape=self.input_shape,
                        dropout=0.5))
         model.add(Dense(512, activation='relu'))
@@ -144,9 +163,9 @@ class ResearchModels():
         # Model.
         model = Sequential()
         model.add(Flatten(input_shape=self.input_shape))
-        model.add(Dense(512))
+        model.add(Dense(128))
         model.add(Dropout(0.5))
-        model.add(Dense(512))
+        model.add(Dense(128))
         model.add(Dropout(0.5))
         model.add(Dense(self.nb_classes, activation='softmax'))
 
