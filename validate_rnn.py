@@ -2,7 +2,7 @@
 Validate our RNN. Basically just runs a validation generator on
 about the same number of videos as we have in our test set.
 """
-from keras.callbacks import TensorBoard, ModelCheckpoint, CSVLogger
+from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, CSVLogger
 from models import ResearchModels
 from data import DataSet
 

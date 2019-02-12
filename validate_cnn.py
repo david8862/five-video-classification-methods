@@ -8,7 +8,7 @@ import glob
 import os.path
 from data import DataSet
 from processor import process_image
-from keras.models import load_model
+from tensorflow.keras.models import load_model
 
 def main(nb_images=5):
     """Spot-check `nb_images` images."""

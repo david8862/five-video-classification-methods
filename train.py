@@ -1,7 +1,7 @@
 """
 Train our RNN on extracted features or images.
 """
-from keras.callbacks import TensorBoard, ModelCheckpoint, EarlyStopping, CSVLogger
+from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, EarlyStopping, CSVLogger
 from models import ResearchModels
 from data import DataSet
 import time

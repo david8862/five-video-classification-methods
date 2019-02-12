@@ -8,7 +8,7 @@ features must be extracted first.
 Note also that this is a rushed demo script to help a few people who have
 requested it and so is quite "rough". :)
 """
-from keras.models import load_model
+from tensorflow.keras.models import load_model
 from data import DataSet
 import numpy as np
 
