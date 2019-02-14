@@ -163,9 +163,9 @@ class ResearchModels():
         # Model.
         model = Sequential()
         model.add(Flatten(input_shape=self.input_shape))
-        model.add(Dense(128))
+        model.add(Dense(64))
         model.add(Dropout(0.5))
-        model.add(Dense(128))
+        model.add(Dense(64))
         model.add(Dropout(0.5))
         model.add(Dense(self.nb_classes, activation='softmax'))
 

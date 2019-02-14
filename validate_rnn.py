@@ -6,9 +6,9 @@ from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, CSVLogger
 from models import ResearchModels
 from data import DataSet
 
-def validate(data_type, model, seq_length=40, saved_model=None,
+def validate(data_type, model, seq_length=10, saved_model=None,
              class_limit=None, image_shape=None):
-    batch_size = 32
+    batch_size = 3
 
     # Get the data and process it.
     if image_shape is None:
@@ -31,14 +31,15 @@ def validate(data_type, model, seq_length=40, saved_model=None,
     # Evaluate!
     results = rm.model.evaluate_generator(
         generator=val_generator,
-        val_samples=3200)
+        steps=5)
 
     print(results)
     print(rm.model.metrics_names)
+    print('Test accuracy:', results[1])
 
 def main():
-    model = 'lstm'
-    saved_model = 'data/checkpoints/lstm-features.026-0.239.hdf5'
+    model = 'mlp'
+    saved_model = 'data/checkpoints/mlp-features.523-0.346-0.92.hdf5'
 
     if model == 'conv_3d' or model == 'lrcn':
         data_type = 'images'
@@ -48,7 +49,7 @@ def main():
         image_shape = None
 
     validate(data_type, model, saved_model=saved_model,
-             image_shape=image_shape, class_limit=4)
+             image_shape=image_shape, class_limit=None)
 
 if __name__ == '__main__':
     main()
