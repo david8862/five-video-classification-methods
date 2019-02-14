@@ -1,5 +1,5 @@
 from tensorflow.keras.preprocessing import image
-from tensorflow.keras.applications.inception_v3 import InceptionV3, preprocess_input
+from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2, preprocess_input
 from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.layers import Input
 import numpy as np
@@ -13,7 +13,7 @@ class Extractor():
 
         if weights is None:
             # Get model with pretrained weights.
-            base_model = InceptionV3(
+            base_model = MobileNetV2(
                 weights='imagenet',
                 include_top=True
             )
@@ -21,7 +21,7 @@ class Extractor():
             # We'll extract features at the final pool layer.
             self.model = Model(
                 inputs=base_model.input,
-                outputs=base_model.get_layer('avg_pool').output
+                outputs=base_model.get_layer('global_average_pooling2d').output
             )
 
         else:
@@ -37,7 +37,7 @@ class Extractor():
             self.model.layers[-1].outbound_nodes = []
 
     def extract(self, image_path):
-        img = image.load_img(image_path, target_size=(299, 299))
+        img = image.load_img(image_path, target_size=(224, 224))
         x = image.img_to_array(img)
         x = np.expand_dims(x, axis=0)
         x = preprocess_input(x)
