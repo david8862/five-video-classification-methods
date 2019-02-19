@@ -41,7 +41,7 @@ class Extractor():
             self.feature_length = feature_length
 
     def extract(self, image_path):
-        img = image.load_img(image_path, target_size=(224, 224))
+        img = image.load_img(image_path, target_size=self.get_target_size())
         x = image.img_to_array(img)
         x = np.expand_dims(x, axis=0)
         x = preprocess_input(x)
@@ -58,16 +58,35 @@ class Extractor():
 
         return features
 
+    def layer_type(self, layer):
+        # TODO: use isinstance() instead.
+        return str(layer)[10:].split(" ")[0].split(".")[-1]
+
+    def detect_last_conv(self):
+        # Names (types) of layers from end to beggining
+        inverted_list_layers = [self.layer_type(layer) for layer in self.model.layers[::-1]]
+        i = len(self.model.layers)
+
+        for layer in inverted_list_layers:
+            i -= 1
+            if layer == "Conv2D":
+                return i
+
+    def get_target_size(self):
+        if K.image_data_format() == 'channels_first':
+            return self.model.input_shape[2:4]
+        else:
+            return self.model.input_shape[1:3]
+
     def get_convout(self, image_path):
-        img = image.load_img(image_path, target_size=(224, 224))
+        img = image.load_img(image_path, target_size=self.get_target_size())
         x = image.img_to_array(img)
         x = np.expand_dims(x, axis=0)
         x = preprocess_input(x)
 
-        # Get last conv layer. -2 is specific for MobileNetV2
-        # TODO: need a common method to get the last conv
-        #       layer from any model
-        last_conv_layer = self.model.layers[-2]
+        # Get last conv layer
+        last_conv_index = self.detect_last_conv()
+        last_conv_layer = self.model.layers[last_conv_index]
 
         # Get the predicted conv output.
         iterate = K.function([self.model.input], [last_conv_layer.output[0]])

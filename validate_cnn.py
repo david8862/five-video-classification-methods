@@ -38,7 +38,7 @@ def main(nb_images=5):
             label_predictions[label] = predictions[0][i]
 
         sorted_lps = sorted(label_predictions.items(), key=operator.itemgetter(1), reverse=True)
-        
+
         for i, class_prediction in enumerate(sorted_lps):
             # Just get the top five.
             if i > 4:
