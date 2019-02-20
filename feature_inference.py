@@ -16,9 +16,12 @@ below, but need to match your pre-trained inference model!!
 from tensorflow.keras.models import load_model
 import numpy as np
 import os.path
-import argparse
+import os, argparse
 from data import DataSet
 from extractor import Extractor
+from tensorflow.keras import backend as K
+
+K.clear_session()
 
 
 def extract(data, seq_length, video_name):
@@ -60,7 +63,7 @@ def predict(data, sequence, saved_model):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_file', help='Model file name under data/checkpoints/ dir', type=str, default=os.path.join(os.path.dirname(__file__), 'data/checkpoints/mlp-features.523-0.346-0.92.hdf5'))
+    parser.add_argument('--model_file', help='Model file name with path. Should be under data/checkpoints/ dir', type=str, default=os.path.join(os.path.dirname(__file__), 'data/checkpoints/mlp-features.523-0.346-0.92.hdf5'))
     parser.add_argument('--video_name', help='Inferenced video file in data/data_file.csv. Do not include the extension ', type=str, default='restRoom_001')
     args = parser.parse_args()
 

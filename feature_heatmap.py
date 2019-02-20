@@ -17,11 +17,13 @@ from tensorflow.keras.models import load_model
 import tensorflow.keras.backend as K
 import numpy as np
 import os.path
-import argparse
+import os, argparse
 from data import DataSet
 from extractor import Extractor
 import cv2
 import matplotlib.pyplot as plt
+
+K.clear_session()
 
 def touchdir(path):
     if not os.path.exists(path):
@@ -122,7 +124,7 @@ def generate_heatmap(frames, conv_sequence, feature_grads_sequence, seq_length, 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_file', help='Model file name under data/checkpoints/ dir', type=str, default=os.path.join(os.path.dirname(__file__), 'data/checkpoints/mlp-features.523-0.346-0.92.hdf5'))
+    parser.add_argument('--model_file', help='Model file name with path. Should be under data/checkpoints/ dir', type=str, default=os.path.join(os.path.dirname(__file__), 'data/checkpoints/mlp-features.523-0.346-0.92.hdf5'))
     parser.add_argument('--video_name', help='Inferenced video file in data/data_file.csv. Do not include the extension ', type=str, default='restRoom_001')
     args = parser.parse_args()
 
