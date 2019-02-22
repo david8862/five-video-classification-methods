@@ -22,10 +22,20 @@ def touchdir(path):
 
 def create_datafile(sequence_path_list):
     data_file = []
+    # Loop for the sequence list
     for sequence_path in sequence_path_list:
+        # get frame number for the sequence
         nb_frames = os.popen('ls -l ' + sequence_path + '-* | wc -l').read()
         nb_frames = int(nb_frames)
 
+        # Parse sequence info from full path
+        # A sequence path would be like:
+        #
+        # train/bedroom/bedRoom_A97
+        #    ^     ^       ^
+        #    |     |       |
+        # [type][class][seq name]
+        #
         parts = sequence_path.split(os.path.sep)
         filename_no_ext = parts[2]
         classname = parts[1]
@@ -33,6 +43,7 @@ def create_datafile(sequence_path_list):
 
         data_file.append([train_or_test, classname, filename_no_ext, nb_frames])
 
+    # save to data_file.csv
     with open('data_file.csv', 'w') as fout:
         writer = csv.writer(fout)
         writer.writerows(data_file)
@@ -43,7 +54,7 @@ def fakeRGB_seq_convert(path, dst):
     Solution1：use PIL image.convert()
     :param path: input image full path
     :param dst: output store folder path
-    :return:rgb3个通道值相等的rgb图像
+    :return: sequence prefix with path
     '''
     b = Image.open(path)
     # Convert to gray first if is not
