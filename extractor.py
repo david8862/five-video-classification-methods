@@ -6,7 +6,7 @@ import tensorflow.keras.backend as K
 import numpy as np
 
 class Extractor():
-    def __init__(self, weights=None, feature_length=None):
+    def __init__(self, weights=None):
         """Either load pretrained from imagenet, or load our saved
         weights from our own training."""
 
@@ -24,7 +24,6 @@ class Extractor():
                 inputs=base_model.input,
                 outputs=base_model.get_layer('global_average_pooling2d').output
             )
-            self.feature_length = 1280
 
         else:
             # Load the model first.
@@ -38,7 +37,6 @@ class Extractor():
             self.model.output_layers = [self.model.layers[-1]]
             self.model.layers[-1].outbound_nodes = []
 
-            self.feature_length = feature_length
 
     def extract(self, image_path):
         img = image.load_img(image_path, target_size=self.get_target_size())
@@ -79,12 +77,13 @@ class Extractor():
             return self.model.input_shape[1:3]
 
     def get_convout(self, image_path):
+        """Get last conv layer output of the extractor model."""
         img = image.load_img(image_path, target_size=self.get_target_size())
         x = image.img_to_array(img)
         x = np.expand_dims(x, axis=0)
         x = preprocess_input(x)
 
-        # Get last conv layer
+        # Auto detect last conv layer
         last_conv_index = self.detect_last_conv()
         last_conv_layer = self.model.layers[last_conv_index]
 

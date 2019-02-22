@@ -15,26 +15,18 @@ import csv
 import argparse
 
 
-data_list = []
-
 def touchdir(path):
     if not os.path.exists(path):
         os.makedirs(path)
 
 
-def add_to_datalist(file_prefix):
-    global data_list
-    if file_prefix not in data_list:
-        data_list.append(file_prefix)
-
-def create_datafile():
-    global data_list
+def create_datafile(sequence_path_list):
     data_file = []
-    for data_path in data_list:
-        nb_frames = os.popen('ls -l ' + data_path + '-* | wc -l').read()
+    for sequence_path in sequence_path_list:
+        nb_frames = os.popen('ls -l ' + sequence_path + '-* | wc -l').read()
         nb_frames = int(nb_frames)
 
-        parts = data_path.split(os.path.sep)
+        parts = sequence_path.split(os.path.sep)
         filename_no_ext = parts[2]
         classname = parts[1]
         train_or_test = parts[0]
@@ -46,79 +38,53 @@ def create_datafile():
         writer.writerows(data_file)
 
 
-def fakeRgb1(path, dst):
+def fakeRGB_seq_convert(path, dst):
     '''
-    方法1：直接使用convert将L转为RGB
-    :param path:图片输出路径
-    :param dst:图片输出路径
+    Solution1：use PIL image.convert()
+    :param path: input image full path
+    :param dst: output store folder path
     :return:rgb3个通道值相等的rgb图像
     '''
     b = Image.open(path)
-    # 转换为灰度图
+    # Convert to gray first if is not
     if b.mode != 'L':
         b = b.convert('L')
+    # Do fakeRGB
     b = b.convert('RGB')
-    # 将图像转为数组
+    # to numpy array
     rgb_array = np.asarray(b)
-    # 将数组转换为图像
+    # back to RGB image
     rgb_image = Image.fromarray(rgb_array)
 
+    # Parse data sample image info from full path
+    # A data sample path would be like:
+    #
+    # bedroom/A97_000900.jpg
+    #    ^     ^      ^
+    #    |     |      |
+    #[class][batch][unique number]
+    #
     class_name = path.split(os.path.sep)[-2]
 
     file_name = path.split(os.path.sep)[-1]
     file_name_no_ext = file_name.split('.')[-2]
-    file_name_list = file_name_no_ext.split('_')
+    file_name_parts = file_name_no_ext.split('_')
 
-    target_class_path = dst + os.path.sep + class_name
-    touchdir(target_class_path)
+    # Touch output class path
+    output_class_path = os.path.join(dst, class_name)
+    touchdir(output_class_path)
 
-    target_file_prefix = class_name + '_' + file_name_list[0]
-    target_file_name = target_file_prefix + '-' + file_name_list[1] + '.jpg'
+    # Combine output file name and sequence prefix
+    output_seq_prefix = class_name + '_' + file_name_parts[0]
+    output_file_name = output_seq_prefix + '-' + file_name_parts[1] + '.jpg'
 
-    output_path = target_class_path + os.path.sep + target_file_name
-    rgb_image.save(output_path)
-    print(output_path)
+    # Store fakeRGB image to output path
+    output_full_path = os.path.join(output_class_path, output_file_name)
+    rgb_image.save(output_full_path)
+    print(output_full_path)
 
-    add_to_datalist(target_class_path + os.path.sep + target_file_prefix)
-
-
-#def fakeRgb2(path, dst):
-    #'''
-    #方法二：最原始的拼接数组方法
-    #:param path:图片输入路径
-    #:param dst:图片输出路径
-    #:return:rgb3个通道值相等的rgb图像
-    #'''
-
-    #b = Image.open(path)
-    ## 转换为灰度图
-    #if b.mode != 'L':
-        #b = b.convert('L')
-    ## 将图像转为数组
-    #b_array = np.asarray(b)
-    ## 将3个二维数组重叠为一个三维数组
-    #rgb_array = np.zeros((b_array.shape[0], b_array.shape[1], 3), "uint8")
-    #rgb_array[:, :, 0], rgb_array[:, :, 1], rgb_array[:, :, 2] = b_array, b_array, b_array
-    #rgb_image = Image.fromarray(rgb_array)
-
-    #class_name = path.split(os.path.sep)[-2]
-
-    #file_name = path.split(os.path.sep)[-1]
-    #file_name_no_ext = file_name.split('.')[-2]
-    #file_name_list = file_name_no_ext.split('_')
-
-    #target_class_path = dst + os.path.sep + class_name
-    #touchdir(target_class_path)
-
-    #target_file_prefix = class_name + '_' + file_name_list[0]
-    #target_file_name = target_file_prefix + '-' + file_name_list[1] + '.jpg'
-
-    #output_path = target_class_path + os.path.sep + target_file_name
-    #rgb_image.save(output_path)
-    #print(output_path)
-
-    #add_to_datalist(target_class_path + os.path.sep + target_file_prefix)
-
+    # Return sequence full prefix. Will be used for data file generation
+    return os.path.join(output_class_path, output_seq_prefix)
 
 
 
@@ -127,17 +93,28 @@ def main():
     parser.add_argument('--output_path', help='Output path for the converted image', type=str, default=os.path.join(os.path.dirname(__file__), 'train'))
     args = parser.parse_args()
 
+    sequence_path_list = []
+
+    # Scan "./" to get class folder
     class_folders = glob.glob('./*')
     class_folders = [item for item in class_folders if os.path.isdir(item)]
     for class_folder in class_folders:
+        # Get the image file list. Now handle both jpg and bmp file
         jpg_files = glob.glob(os.path.join(class_folder, '*.jpg'))
         bmp_files = glob.glob(os.path.join(class_folder, '*.bmp'))
         img_files = jpg_files + bmp_files
 
+        # Do the fake RGB convert to every image, converted
+        # output will store under output_path with corresponding
+        # class sub folder
         for img_file in img_files:
-            fakeRgb1(img_file, args.output_path)
+            output_sequence = fakeRGB_seq_convert(img_file, args.output_path)
 
-    create_datafile()
+            if output_sequence not in sequence_path_list:
+                sequence_path_list.append(output_sequence)
+
+    # create data_file.csv
+    create_datafile(sequence_path_list)
 
 
 if __name__ == "__main__":

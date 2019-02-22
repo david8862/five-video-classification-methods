@@ -21,7 +21,6 @@ import os, argparse
 from data import DataSet
 from extractor import Extractor
 import cv2
-import matplotlib.pyplot as plt
 
 K.clear_session()
 
@@ -34,7 +33,7 @@ def extract_and_conv(data, seq_length, video_name):
     model = Extractor()
     # init the sequence
     sequence = []
-    # init the conv out
+    # init the conv output
     conv_sequence = []
 
     # First, find the sample row.
@@ -51,73 +50,71 @@ def extract_and_conv(data, seq_length, video_name):
     # Now downsample to just the ones we need.
     frames = data.rescale_list(frames, seq_length)
 
-    # Now loop through and extract features to build the sequence.
+    # Now loop through and extract features & conv output sequence.
     for image in frames:
         features = model.extract(image)
         sequence.append(features)
+        # Get last conv layer output.
         conv_out = model.get_convout(image)
         conv_sequence.append(conv_out)
 
-    return frames, sequence, conv_sequence, model.feature_length
+    return frames, sequence, conv_sequence
 
 
-def get_feature_grads(data, sequence, seq_length, saved_model, feature_length):
-    if feature_length == None:
-        raise ValueError("Invalid feature length. Pls check extractor model")
-
+def get_feature_grads(data, sequence, seq_length, saved_model):
     model = load_model(saved_model)
-    feature_layer = model.layers[0]
 
-    # Predict!
+    # Predict
     sequence = np.expand_dims(sequence, axis=0)
     prediction = model.predict(sequence)
+    # Get feature gradients to the predicted output
     index = np.argmax(prediction[0])
     max_output = model.output[:, index]
-    feature_grads = K.gradients(max_output, feature_layer.output)[0]
+    feature_grads = K.gradients(max_output, model.input)[0]
     iterate = K.function([model.input], [feature_grads])
     feature_grads_value = iterate([sequence])[0]
     feature_grads_value = np.squeeze(feature_grads_value)
 
-    feature_grads_sequence = []
-    for i in range(0, seq_length*feature_length, feature_length):
-        feature_grads_sequence.append(feature_grads_value[i:i+feature_length])
-
-    return feature_grads_sequence
+    return feature_grads_value
 
 
-def generate_heatmap(frames, conv_sequence, feature_grads_sequence, seq_length, feature_length):
+def generate_heatmap(frames, conv_sequence, feature_grads_sequence, seq_length):
+    # Parameter check
     if len(frames) != seq_length:
         raise ValueError("frame length doesn't match. Pls check the rescale part")
     if len(conv_sequence) != seq_length:
         raise ValueError("conv layer output length doesn't match. Pls check the conv output")
     if len(feature_grads_sequence) != seq_length:
         raise ValueError("feature grads length doesn't match. Pls check the feature grads output")
-    if feature_length == None:
-        raise ValueError("Invalid feature length. Pls check extractor model")
 
+    # Loop of the frame sequence
     for i in range(seq_length):
         image = frames[i]
         conv_value = conv_sequence[i]
         feature_grads_value = feature_grads_sequence[i]
 
-        for j in range(feature_length):
+        # apply the activation to each channel of the conv'ed feature map
+        for j in range(len(feature_grads_value)):
             conv_value[:, :, j] *= feature_grads_value[j]
 
+        # get mean of each channel, which is the heatmap
         heatmap = np.mean(conv_value, axis=-1)
+        # normalize heatmap to 0~1
         heatmap = np.maximum(heatmap, 0)
         heatmap /= np.max(heatmap)
 
+        # overlap heatmap to frame image
         img = cv2.imread(image)
         heatmap = cv2.resize(heatmap, (img.shape[1], img.shape[0]))
         heatmap = np.uint8(255 * heatmap)
         heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
         superimposed_img = heatmap * 0.4 + img
 
+        # save overlaped image
         heatmap_path = os.path.join('data', 'heatmap')
         touchdir(heatmap_path)
-
-        print('generate heatmap', os.path.join(heatmap_path, image.split(os.path.sep)[-1]))
         cv2.imwrite(os.path.join(heatmap_path, image.split(os.path.sep)[-1]), superimposed_img)
+        print('generate heatmap', os.path.join(heatmap_path, image.split(os.path.sep)[-1]))
 
 
 
@@ -136,12 +133,15 @@ def main():
     # Get the dataset.
     data = DataSet(seq_length=seq_length, class_limit=class_limit)
 
-    frames, sequence, conv_sequence, feature_length = extract_and_conv(data, seq_length, args.video_name)
+    # Get feature sequence and conv sequence.
+    frames, sequence, conv_sequence = extract_and_conv(data, seq_length, args.video_name)
     sequence = np.asarray(sequence)
 
-    feature_grads_sequence = get_feature_grads(data, sequence, seq_length, args.model_file, feature_length)
+    # Do the predict and get feature gradient sequence.
+    feature_grads_sequence = get_feature_grads(data, sequence, seq_length, args.model_file)
 
-    generate_heatmap(frames, conv_sequence, feature_grads_sequence, seq_length, feature_length)
+    # GradCAM: use feature gradient sequence and conv sequence to generate heatmap.
+    generate_heatmap(frames, conv_sequence, feature_grads_sequence, seq_length)
 
 
 
