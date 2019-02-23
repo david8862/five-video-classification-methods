@@ -1,5 +1,6 @@
 from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2, preprocess_input
 from tensorflow.keras.preprocessing import image
+from tensorflow.keras.models import load_model
 import tensorflow.keras.backend as K
 #import matplotlib.pyplot as plt
 import numpy as np
@@ -36,7 +37,7 @@ def generate_heatmap(image_file, model_file, heatmap_file):
         model = load_model(model_file)
     model.summary()
 
-    # detect model input shape
+    # process input
     target_size = get_target_size(model)
     img = image.load_img(image_file, target_size=target_size)
     x = image.img_to_array(img)
