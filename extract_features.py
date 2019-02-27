@@ -17,6 +17,23 @@ from data import DataSet
 from extractor import Extractor
 from tqdm import tqdm
 
+def save_seq_txt(txt_path, sequence):
+    sequence = np.asarray(sequence)
+    #print(a.shape)
+
+    #flatten the sequence for save
+    flat_sequence = sequence.reshape(-1)
+
+    with open(txt_path, 'w') as f:
+        #save sequence length and feature length
+        #in 1st two lines
+        f.write(str(sequence.shape[0])+'\n')
+        f.write(str(sequence.shape[1])+'\n')
+
+        for item in flat_sequence:
+            f.write(str(item)+'\n')
+
+
 # Set defaults.
 seq_length = 10
 class_limit = None  # Number of classes to extract. Can be 1-101 or None for all.
@@ -34,6 +51,9 @@ for video in data.data:
     # Get the path to the sequence for this video.
     path = os.path.join('data', 'sequences', video[2] + '-' + str(seq_length) + \
         '-features')  # numpy will auto-append .npy
+
+    txt_path = os.path.join('data', 'sequences_txt', video[2] + '-' + str(seq_length) + \
+        '-features.txt')
 
     # Check if we already have it.
     if os.path.isfile(path + '.npy'):
@@ -54,6 +74,8 @@ for video in data.data:
 
     # Save the sequence.
     np.save(path, sequence)
+    # Save the sequence to txt format for tflite inference.
+    save_seq_txt(txt_path, sequence)
 
     pbar.update(1)
 
