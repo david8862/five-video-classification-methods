@@ -10,7 +10,7 @@ from tensorflow.keras import backend as K
 
 K.clear_session()
 
-def validate(data_type, model, seq_length=10, saved_model=None,
+def validate(data_type, model, seq_length=5, saved_model=None,
              class_limit=None, image_shape=None):
     batch_size = 25
 

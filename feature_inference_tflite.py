@@ -87,7 +87,7 @@ def main():
     args = parser.parse_args()
 
     # Sequence length must match the lengh used during training.
-    seq_length = 10
+    seq_length = 5
     # Limit must match that used during training.
     class_limit = None
 

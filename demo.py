@@ -36,7 +36,7 @@ def main():
     # Must be a weights file.
     saved_model = 'data/checkpoints/mlp-features.523-0.346-0.92.hdf5'
     # Sequence length must match the lengh used during training.
-    seq_length = 10
+    seq_length = 5
     # Limit must match that used during training.
     class_limit = None
 

@@ -21,7 +21,7 @@ def train(data_type, seq_length, model, saved_model=None,
     tb = TensorBoard(log_dir=os.path.join('data', 'logs', model))
 
     # Helper: Stop when we stop learning.
-    early_stopper = EarlyStopping(patience=30)
+    early_stopper = EarlyStopping(patience=200)
 
     # Helper: Save results.
     timestamp = time.time()
@@ -87,7 +87,7 @@ def main():
     model = 'mlp'
     saved_model = None  # None or weights file
     class_limit = None  # int, can be 1-101 or None
-    seq_length = 10
+    seq_length = 5
     load_to_memory = False  # pre-load the sequences into memory
     batch_size = 32
     nb_epoch = 1000

@@ -35,7 +35,7 @@ def save_seq_txt(txt_path, sequence):
 
 
 # Set defaults.
-seq_length = 10
+seq_length = 5
 class_limit = None  # Number of classes to extract. Can be 1-101 or None for all.
 
 # Get the dataset.
