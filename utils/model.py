@@ -24,6 +24,20 @@ def detect_last_conv(model):
         if layer == "Conv2D":
             return i
 
+def detect_conv_layers(model):
+    if not isinstance(model, tf.keras.Model):
+        raise TypeError('Not a tf.keras Model object')
+
+    # Names (types) of layers from end to beggining
+    list_layers = [layer_type(layer) for layer in model.layers]
+    i = len(model.layers)
+    conv_list = []
+
+    for i, layer in enumerate(list_layers):
+        if layer == "Conv2D":
+            conv_list.append(i)
+
+    return conv_list
 
 def get_target_size(model):
     if not isinstance(model, tf.keras.Model):
