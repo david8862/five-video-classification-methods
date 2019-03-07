@@ -21,12 +21,10 @@ import os, argparse
 from data import DataSet
 from extractor import Extractor
 import cv2
+from utils.path import touchdir
 
 K.clear_session()
 
-def touchdir(path):
-    if not os.path.exists(path):
-        os.makedirs(path)
 
 def extract_and_conv(data, seq_length, video_name):
     # get the model.

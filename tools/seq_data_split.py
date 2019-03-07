@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
-this scipt will split the sequence image dataset
+This scipt will split the sequence image dataset
 under "data" dir to the target sequence length.
-Images will be rename and data_file.csv will be
-updated
+Result will be stored at "data/output". Images
+will be rename and corresponding data_file.csv
+will be generated.
+NOTE: Due to path limit, this script only works
+at <Project>/tools dir.
 '''
 
 from PIL import Image
@@ -12,17 +15,18 @@ import numpy as np
 import os, glob, shutil
 import csv
 import argparse
+import sys
+sys.path.append("../")
 from data import DataSet
-
-def touchdir(path):
-    if not os.path.exists(path):
-        os.makedirs(path)
+from utils.path import touchdir
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--target_seq_length', help='Sequence length you want to split to', type=int, default=5)
     args = parser.parse_args()
+
+    os.chdir(os.path.join(os.path.dirname(__file__), '..'))
 
     # Get the dataset.
     data = DataSet.get_data()
@@ -46,6 +50,9 @@ def main():
                 if(count == args.target_seq_length):
                     data_file.append([sample[0], sample[1], sample[2] + str(chr(label)), count])
                     label = label + 1
+                    # assume A~Z + a~z is enough
+                    if label == ord('Z') + 1:
+                        label = ord('a')
                     count = 0
 
     with open(os.path.join('data', 'output', 'data_file.csv'), 'w') as fout:
