@@ -13,32 +13,56 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
 from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard, EarlyStopping
 from data import DataSet
+import numpy as np
 import os.path
+from cv2 import resize
 
 data = DataSet()
 
 # Helper: Save the model.
 checkpointer = ModelCheckpoint(
     filepath=os.path.join('data', 'checkpoints', 'mobilenetv2.{epoch:03d}-{val_acc:.2f}.hdf5'),
+    monitor='val_acc',
     verbose=1,
+    save_weights_only=False,
     save_best_only=True)
 
 # Helper: Stop when we stop learning.
-early_stopper = EarlyStopping(patience=30)
+early_stopper = EarlyStopping(monitor='val_acc', patience=300)
 
 # Helper: TensorBoard
 tensorboard = TensorBoard(log_dir=os.path.join('data', 'logs'))
+
+#customize function used for color convetion
+def my_crop_function(image):
+    image = np.array(image)
+    crop_rate = 0.666
+
+    # Note: image_data_format is 'channel_last'
+    assert image.shape[2] == 3
+
+    height, width = image.shape[0], image.shape[1]
+    target_height = int(height * crop_rate)
+    croped_image = image[:target_height, :, :]
+    croped_image = resize(croped_image, (height, width))
+
+    return croped_image
+
+
 
 def get_generators():
     train_datagen = ImageDataGenerator(
         rescale=1./255,
         shear_range=0.2,
         horizontal_flip=True,
-        rotation_range=10.,
+        #rotation_range=10.,
         width_shift_range=0.2,
-        height_shift_range=0.2)
+        height_shift_range=0.2,
+        preprocessing_function=my_crop_function)
 
-    test_datagen = ImageDataGenerator(rescale=1./255)
+    test_datagen = ImageDataGenerator(rescale=1./255,
+            preprocessing_function=my_crop_function)
+
 
     train_generator = train_datagen.flow_from_directory(
         os.path.join('data', 'train'),
@@ -133,4 +157,5 @@ def main(weights_file):
 
 if __name__ == '__main__':
     weights_file = None
+    #weights_file = 'data/checkpoints/mobilenetv2.987-0.93.hdf5'
     main(weights_file)

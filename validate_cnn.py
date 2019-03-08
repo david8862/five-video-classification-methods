@@ -10,10 +10,10 @@ from data import DataSet
 from processor import process_image
 from tensorflow.keras.models import load_model
 
-def main(nb_images=5):
+def main(nb_images=50):
     """Spot-check `nb_images` images."""
     data = DataSet()
-    model = load_model('data/checkpoints/inception.057-1.16.hdf5')
+    model = load_model('data/checkpoints/mobilenetv2_roborock.004-0.62.hdf5')
 
     # Get all our test images.
     images = glob.glob(os.path.join('data', 'test', '**', '*.jpg'))
@@ -26,7 +26,7 @@ def main(nb_images=5):
 
         # Turn the image into an array.
         print(image)
-        image_arr = process_image(image, (299, 299, 3))
+        image_arr = process_image(image, (224, 224, 3))
         image_arr = np.expand_dims(image_arr, axis=0)
 
         # Predict.

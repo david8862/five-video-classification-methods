@@ -16,7 +16,7 @@ import os, glob, shutil
 import csv
 import argparse
 import sys
-sys.path.append("../")
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from data import DataSet
 from utils.path import touchdir
 

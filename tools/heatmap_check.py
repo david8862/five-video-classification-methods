@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+'''
+generate heatmap for an input image to verify
+the trained CNN model
+'''
 from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2, preprocess_input
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.models import load_model
@@ -47,6 +53,7 @@ def generate_heatmap(image_file, model_file, heatmap_file):
     # predict and get output
     preds = model.predict(x)
     index = np.argmax(preds[0])
+    print(preds[0])
     print('predict index: {}'.format(index))
     max_output = model.output[:, index]
     # detect last conv layer
