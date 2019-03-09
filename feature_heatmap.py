@@ -21,7 +21,7 @@ import os, argparse
 from data import DataSet
 from extractor import Extractor
 import cv2
-from utils.path import touchdir
+from utils.common import touchdir, get_config
 
 K.clear_session()
 
@@ -123,10 +123,12 @@ def main():
     parser.add_argument('--video_name', help='Inferenced video file in data/data_file.csv. Do not include the extension ', type=str, default='restRoom_001')
     args = parser.parse_args()
 
+    cf = get_config()
     # Sequence length must match the lengh used during training.
-    seq_length = 10
+    seq_length = cf.getint('sequence', 'seq_length')
     # Limit must match that used during training.
-    class_limit = None
+    class_limit = cf.get('sequence', 'class_limit')
+    class_limit = int(class_limit) if class_limit != 'None' else None
 
     # Get the dataset.
     data = DataSet(seq_length=seq_length, class_limit=class_limit)

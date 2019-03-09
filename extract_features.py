@@ -16,6 +16,7 @@ import os.path
 from data import DataSet
 from extractor import Extractor
 from tqdm import tqdm
+from utils.common import get_config
 
 def save_seq_txt(txt_path, sequence):
     sequence = np.asarray(sequence)
@@ -35,8 +36,10 @@ def save_seq_txt(txt_path, sequence):
 
 
 # Set defaults.
-seq_length = 5
-class_limit = None  # Number of classes to extract. Can be 1-101 or None for all.
+cf = get_config()
+seq_length = cf.getint('sequence', 'seq_length')
+class_limit = cf.get('sequence', 'class_limit')  # Number of classes to extract. Can be 1-101 or None for all.
+class_limit = int(class_limit) if class_limit != 'None' else None
 
 # Get the dataset.
 data = DataSet(seq_length=seq_length, class_limit=class_limit)

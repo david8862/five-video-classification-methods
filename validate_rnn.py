@@ -7,6 +7,7 @@ from models import ResearchModels
 from data import DataSet
 import os, argparse
 from tensorflow.keras import backend as K
+from utils.common import get_config
 
 K.clear_session()
 
@@ -47,8 +48,10 @@ def main():
     parser.add_argument('--saved_model', help='Model file name with path. Should be under data/checkpoints/ dir', type=str, default=os.path.join(os.path.dirname(__file__), 'data/checkpoints/mlp-features.523-0.346-0.92.hdf5'))
     args = parser.parse_args()
 
+    cf = get_config()
     #model = 'mlp'
     #saved_model = 'data/checkpoints/mlp-features.316-0.459-0.88.hdf5'
+    seq_length = cf.getint('sequence', 'seq_length')
 
     if args.model_type == 'conv_3d' or args.model_type == 'lrcn':
         data_type = 'images'
@@ -57,7 +60,7 @@ def main():
         data_type = 'features'
         image_shape = None
 
-    validate(data_type, args.model_type, saved_model=args.saved_model,
+    validate(data_type, args.model_type, seq_length=seq_length, saved_model=args.saved_model,
              image_shape=image_shape, class_limit=None)
 
 if __name__ == '__main__':

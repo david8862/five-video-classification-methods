@@ -6,6 +6,7 @@ from models import ResearchModels
 from data import DataSet
 import time
 import os.path
+from utils.common import get_config
 
 def train(data_type, seq_length, model, saved_model=None,
           class_limit=None, image_shape=None,
@@ -83,14 +84,16 @@ def train(data_type, seq_length, model, saved_model=None,
 def main():
     """These are the main training settings. Set each before running
     this file."""
+    cf = get_config()
     # model can be one of lstm, lrcn, mlp, conv_3d, c3d
-    model = 'mlp'
+    model = cf.get('sequence', 'model')
     saved_model = None  # None or weights file
-    class_limit = None  # int, can be 1-101 or None
-    seq_length = 5
-    load_to_memory = False  # pre-load the sequences into memory
-    batch_size = 32
-    nb_epoch = 1000
+    class_limit = cf.get('sequence', 'class_limit')  # int, can be 1-101 or None
+    class_limit = int(class_limit) if class_limit != 'None' else None
+    seq_length = cf.getint('sequence', 'seq_length')
+    load_to_memory = cf.getboolean('sequence', 'load_to_memory')  # pre-load the sequences into memory
+    batch_size = cf.getint('sequence', 'batch_size')
+    nb_epoch = cf.getint('sequence', 'nb_epoch')
 
     # Chose images or features and image shape based on network.
     if model in ['conv_3d', 'c3d', 'lrcn']:

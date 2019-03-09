@@ -18,9 +18,9 @@ import numpy as np
 import argparse, os, sys
 import cv2
 import glob
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
 from data import DataSet
-from utils.path import touchdir
+from utils.common import touchdir
 
 
 def layer_type(layer):
@@ -60,6 +60,20 @@ def get_heatmap_file(image_file, predict_class):
 
     return heatmap_file
 
+def my_crop_function(image):
+    #image = np.array(image)
+    crop_rate = 0.666
+
+    # Note: image_data_format is 'channel_last'
+    assert image.shape[2] == 3
+
+    height, width = image.shape[0], image.shape[1]
+    target_height = int(height * crop_rate)
+    croped_image = image[:target_height, :, :]
+    croped_image = cv2.resize(croped_image, (height, width))
+    #croped_image = preprocess_input(croped_image)
+
+    return croped_image
 
 
 def generate_heatmaps(images, model):
@@ -70,6 +84,7 @@ def generate_heatmaps(images, model):
         # process input
         img = image.load_img(image_file, target_size=target_size)
         x = image.img_to_array(img)
+        x = my_crop_function(x)
         x = np.expand_dims(x, axis=0)
         x = preprocess_input(x)
 
@@ -78,6 +93,7 @@ def generate_heatmaps(images, model):
         index = np.argmax(preds[0])
         print(preds[0])
         data = DataSet()
+        print('predict class:{}'.format(index))
         print('predict class:', data.classes[index])
         max_output = model.output[:, index]
 
@@ -108,6 +124,7 @@ def generate_heatmaps(images, model):
 
         # overlap heatmap to frame image
         img = cv2.imread(image_file)
+        img = my_crop_function(img)
         heatmap = cv2.resize(heatmap, (img.shape[1], img.shape[0]))
         heatmap = np.uint8(255 * heatmap)
         heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)

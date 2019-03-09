@@ -16,14 +16,15 @@ import os, glob, shutil
 import csv
 import argparse
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
 from data import DataSet
-from utils.path import touchdir
+from utils.common import touchdir, get_config
 
 
 def main():
+    cf = get_config()
     parser = argparse.ArgumentParser()
-    parser.add_argument('--target_seq_length', help='Sequence length you want to split to', type=int, default=5)
+    parser.add_argument('--target_seq_length', help='Sequence length you want to split to', type=int, default=cf.getint('sequence', 'seq_length'))
     args = parser.parse_args()
 
     os.chdir(os.path.join(os.path.dirname(__file__), '..'))
@@ -59,7 +60,7 @@ def main():
         writer = csv.writer(fout)
         writer.writerows(data_file)
 
-    print('Done')
+    print('Done. Split data at <Project>/data/output. Pls use it for your train&test')
 
 
 if __name__ == "__main__":

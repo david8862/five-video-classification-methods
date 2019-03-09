@@ -21,7 +21,7 @@ def predict(data_type, seq_length, saved_model, image_shape, video_name, class_l
     else:
         data = DataSet(seq_length=seq_length, image_shape=image_shape,
             class_limit=class_limit)
-    
+
     # Extract the sample from the data.
     sample = data.get_frames_by_filename(video_name, data_type)
 
@@ -31,14 +31,16 @@ def predict(data_type, seq_length, saved_model, image_shape, video_name, class_l
     data.print_class_from_prediction(np.squeeze(prediction, axis=0))
 
 def main():
+    cf = get_config()
     # model can be one of lstm, lrcn, mlp, conv_3d, c3d.
-    model = 'mlp'
+    model = cf.get('sequence', 'model')
     # Must be a weights file.
     saved_model = 'data/checkpoints/mlp-features.523-0.346-0.92.hdf5'
     # Sequence length must match the lengh used during training.
-    seq_length = 5
+    seq_length = cf.getint('sequence', 'seq_length')
     # Limit must match that used during training.
-    class_limit = None
+    class_limit = cf.get('sequence', 'class_limit')
+    class_limit = int(class_limit) if class_limit != 'None' else None
 
     # Demo file. Must already be extracted & features generated (if model requires)
     # Do not include the extension.
