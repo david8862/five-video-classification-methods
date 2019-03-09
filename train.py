@@ -1,7 +1,7 @@
 """
 Train our RNN on extracted features or images.
 """
-from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, EarlyStopping, CSVLogger
+from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, EarlyStopping, CSVLogger, ReduceLROnPlateau
 from models import ResearchModels
 from data import DataSet
 import time
@@ -23,6 +23,9 @@ def train(data_type, seq_length, model, saved_model=None,
 
     # Helper: Stop when we stop learning.
     early_stopper = EarlyStopping(patience=200)
+
+    # Helper: Reduce learning rate when no improve.
+    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.4, patience=40, min_lr=0.0001)
 
     # Helper: Save results.
     timestamp = time.time()
@@ -67,7 +70,7 @@ def train(data_type, seq_length, model, saved_model=None,
             batch_size=batch_size,
             validation_data=(X_test, y_test),
             verbose=1,
-            callbacks=[tb, early_stopper, csv_logger],
+            callbacks=[tb, early_stopper, reduce_lr, csv_logger],
             epochs=nb_epoch)
     else:
         # Use fit generator.
@@ -76,7 +79,7 @@ def train(data_type, seq_length, model, saved_model=None,
             steps_per_epoch=steps_per_epoch,
             epochs=nb_epoch,
             verbose=1,
-            callbacks=[tb, early_stopper, csv_logger, checkpointer],
+            callbacks=[tb, early_stopper, reduce_lr, csv_logger, checkpointer],
             validation_data=val_generator,
             validation_steps=40,
             workers=4)
