@@ -27,7 +27,7 @@ def main():
     parser.add_argument('--target_seq_length', help='Sequence length you want to split to', type=int, default=cf.getint('sequence', 'seq_length'))
     args = parser.parse_args()
 
-    os.chdir(os.path.join(os.path.dirname(__file__), '..'))
+    os.chdir(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
 
     # Get the dataset.
     data = DataSet.get_data()

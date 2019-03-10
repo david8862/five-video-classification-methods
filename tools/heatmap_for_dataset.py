@@ -147,7 +147,7 @@ def main():
     model = load_model(args.model_file)
     model.summary()
 
-    os.chdir(os.path.join(os.path.dirname(__file__), '..'))
+    os.chdir(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
 
     test_images = glob.glob(os.path.join('data', 'test', '**', '*.jpg'))
     train_images = glob.glob(os.path.join('data', 'train', '**', '*.jpg'))
