@@ -57,11 +57,9 @@ def get_generators():
         horizontal_flip=True,
         #rotation_range=10.,
         width_shift_range=0.2,
-        height_shift_range=0.2,
-        preprocessing_function=my_crop_function)
+        height_shift_range=0.2)
 
-    test_datagen = ImageDataGenerator(rescale=1./255,
-            preprocessing_function=my_crop_function)
+    test_datagen = ImageDataGenerator(rescale=1./255)
 
 
     train_generator = train_datagen.flow_from_directory(

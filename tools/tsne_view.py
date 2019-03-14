@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
-use TSNE in sklearn to visualize dataset in 2D
-or 3D dimension. PCA transform is optional for
-decreasing original dimension.
+use TSNE in sklearn to visualize sequence dataset
+in 2D or 3D dimension. PCA transform is optional
+for decreasing original dimension.
 NOTE: Due to path limit, this script only works
 at <Project>/tools dir.
 '''
@@ -21,23 +21,16 @@ from data import DataSet
 from utils.common import get_config
 
 
-def expand_label(label, seq_length):
-    new_label = []
-    for i in range(label.shape[0]):
-        for j in range(seq_length):
-            new_label.append(np.argmax(label[i]))
-
-    return np.array(new_label)
-
 def get_data(data_type):
     cf = get_config()
     seq_length = cf.getint('sequence', 'seq_length')
     data = DataSet(seq_length=seq_length, class_limit=None)
     X_train, y_train = data.get_all_sequences_in_memory(data_type, data_type='features')
-    X_train = X_train.reshape(-1,X_train.shape[-1])
+    # Flatten feature vectors
+    X_train = X_train.reshape(X_train.shape[0],-1)
 
+    y_train = np.array([np.argmax(y_train[i]) for i, _ in enumerate(y_train)])
     n_samples, n_features = X_train.shape
-    y_train = expand_label(y_train, seq_length=seq_length)
     return X_train, y_train, n_samples, n_features
 
 
@@ -86,6 +79,7 @@ def main():
     tsne = TSNE(n_components=args.tsne_dim, init='pca', random_state=0)
     t0 = time()
     result = tsne.fit_transform(data)
+    print('t-SNE embedding done')
 
     fig = plot_embedding(result, label,
                         't-SNE embedding of the digits (time %.2fs)'
