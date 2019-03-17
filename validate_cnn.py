@@ -5,24 +5,31 @@ import numpy as np
 import operator
 import random
 import glob
+import argparse
 import os.path
 from data import DataSet
 from processor import process_image
 from tensorflow.keras.models import load_model
 
-def main(nb_images=50):
+def validate_cnn_model(model_file, nb_images):
     """Spot-check `nb_images` images."""
     data = DataSet()
-    model = load_model('data/checkpoints/mobilenetv2_roborock.004-0.62.hdf5')
+    model = load_model(model_file)
 
     # Get all our test images.
     images = glob.glob(os.path.join('data', 'test', '**', '*.jpg'))
+
+    # Count the correct predict
+    result_count = 0
 
     for _ in range(nb_images):
         print('-'*80)
         # Get a random row.
         sample = random.randint(0, len(images) - 1)
         image = images[sample]
+
+        # Get groundtruth class string
+        class_str = image.split(os.path.sep)[-2]
 
         # Turn the image into an array.
         print(image)
@@ -39,12 +46,31 @@ def main(nb_images=50):
 
         sorted_lps = sorted(label_predictions.items(), key=operator.itemgetter(1), reverse=True)
 
+        # Get top-1 predict class as result
+        predict_class_str = sorted_lps[0][0]
+        if predict_class_str == class_str:
+            result_count = result_count + 1
+
         for i, class_prediction in enumerate(sorted_lps):
             # Just get the top five.
             if i > 4:
                 break
             print("%s: %.2f" % (class_prediction[0], class_prediction[1]))
             i += 1
+
+    print("\nval_acc: %.2f" % (result_count/float(nb_images)))
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--model_file', help='model file to predict', type=str)
+    parser.add_argument('--nb_images', help='number of images want to validate, default=50', type=int, default=50)
+    args = parser.parse_args()
+    if not args.model_file:
+        raise ValueError('model file is not specified')
+
+    validate_cnn_model(args.model_file, args.nb_images)
+
 
 if __name__ == '__main__':
     main()
