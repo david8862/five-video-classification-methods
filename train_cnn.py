@@ -63,14 +63,11 @@ def get_generators():
         #shear_range=0.2,
         horizontal_flip=True,
         #rotation_range=10.,
-        #width_shift_range=0.2,
-        #height_shift_range=0.2,
-        preprocessing_function=my_crop_function)
+        width_shift_range=0.2,
+        height_shift_range=0.2)
 
     test_datagen = ImageDataGenerator(#rescale=1./255,
-        samplewise_std_normalization=True,
-            preprocessing_function=my_crop_function)
-
+        samplewise_std_normalization=True)
 
     train_generator = train_datagen.flow_from_directory(
         os.path.join('data', 'train'),
