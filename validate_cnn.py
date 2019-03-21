@@ -13,6 +13,17 @@ from data import DataSet
 from processor import process_image
 from tensorflow.keras.models import load_model
 
+import tensorflow as tf
+import tensorflow.keras.backend as KTF
+
+config = tf.ConfigProto()
+config.gpu_options.allow_growth=True   #dynamic alloc GPU resource
+config.gpu_options.per_process_gpu_memory_fraction = 0.3  #GPU memory threshold 0.3
+session = tf.Session(config=config)
+
+# set session
+KTF.set_session(session)
+
 def validate_cnn_model(model_file):
     data = DataSet()
     model = load_model(model_file)

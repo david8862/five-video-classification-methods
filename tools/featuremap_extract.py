@@ -7,15 +7,15 @@ All the feature maps will be saved in JPG format
 for further check.
 '''
 import numpy as np
-import os, argparse
+import os, argparse, sys
 from tensorflow.keras.preprocessing import image
-from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.models import load_model
 from tensorflow.keras import backend as K
 import matplotlib.pyplot as plt
 import cv2
 from math import sqrt
-
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
+from processor import process_image
 
 def touchdir(path):
     if not os.path.exists(path):
@@ -61,19 +61,12 @@ def get_subplot_size(shape):
     return 1, shape
 
 
-def process_image(path, target_size):
-    # Turn the image into an array.
-    img = image.load_img(path, target_size=target_size)
-    image_arr = image.img_to_array(img)
-    image_arr = preprocess_input(np.expand_dims(image_arr, axis=0))
-    return image_arr
-
-
 
 def generate_featuremap(image_file, model_file, featuremap_path):
     model = load_model(model_file)
     model.summary()
-    image_arr = process_image(image_file, get_target_size(model))
+    image_arr = process_image(image_file, get_target_size(model)+(3,))
+    image_arr = np.expand_dims(image_arr, axis=0)
 
     # Create featuremap dir
     touchdir(featuremap_path)
@@ -98,7 +91,7 @@ def generate_featuremap(image_file, model_file, featuremap_path):
         file_name = os.path.join(featuremap_path, file_name)
         print('save feature map', file_name)
         plt.savefig(file_name, dpi=100, quality=95)
-        #plt.show()
+        plt.show()
 
     print('feature map extract done')
 

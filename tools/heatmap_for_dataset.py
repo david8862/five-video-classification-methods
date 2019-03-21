@@ -9,7 +9,7 @@ NOTE: Due to path limit, this script only works
 at <Project>/tools dir.
 '''
 
-from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2, preprocess_input
+from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.models import load_model
 import tensorflow.keras.backend as K
@@ -21,7 +21,18 @@ import glob
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
 from data import DataSet
 from utils.common import touchdir
+from processor import process_image
 
+import tensorflow as tf
+import tensorflow.keras.backend as KTF
+
+config = tf.ConfigProto()
+config.gpu_options.allow_growth=True   #dynamic alloc GPU resource
+config.gpu_options.per_process_gpu_memory_fraction = 0.3  #GPU memory threshold 0.3
+session = tf.Session(config=config)
+
+# set session
+KTF.set_session(session)
 
 def layer_type(layer):
     # TODO: use isinstance() instead.
@@ -82,11 +93,9 @@ def generate_heatmaps(images, model):
     for image_file in images:
 
         # process input
-        img = image.load_img(image_file, target_size=target_size)
-        x = image.img_to_array(img)
-        x = my_crop_function(x)
+        x = process_image(image_file, target_size+(3,))
         x = np.expand_dims(x, axis=0)
-        x = preprocess_input(x)
+        #x = my_crop_function(x)
 
         # predict and get output
         preds = model.predict(x)
@@ -124,7 +133,7 @@ def generate_heatmaps(images, model):
 
         # overlap heatmap to frame image
         img = cv2.imread(image_file)
-        img = my_crop_function(img)
+        #img = my_crop_function(img)
         heatmap = cv2.resize(heatmap, (img.shape[1], img.shape[0]))
         heatmap = np.uint8(255 * heatmap)
         heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)

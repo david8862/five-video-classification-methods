@@ -4,15 +4,27 @@
 generate heatmap for an input image to verify
 the trained CNN model
 '''
-from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2, preprocess_input
+from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.models import load_model
 import tensorflow.keras.backend as K
 #import matplotlib.pyplot as plt
 import numpy as np
-import argparse, os
+import argparse, os, sys
 import cv2
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
+from processor import process_image
 
+import tensorflow as tf
+import tensorflow.keras.backend as KTF
+
+config = tf.ConfigProto()
+config.gpu_options.allow_growth=True   #dynamic alloc GPU resource
+config.gpu_options.per_process_gpu_memory_fraction = 0.3  #GPU memory threshold 0.3
+session = tf.Session(config=config)
+
+# set session
+KTF.set_session(session)
 
 def layer_type(layer):
     # TODO: use isinstance() instead.
@@ -44,11 +56,8 @@ def generate_heatmap(image_file, model_file, heatmap_file):
     model.summary()
 
     # process input
-    target_size = get_target_size(model)
-    img = image.load_img(image_file, target_size=target_size)
-    x = image.img_to_array(img)
+    x = process_image(image_file, get_target_size(model)+(3,))
     x = np.expand_dims(x, axis=0)
-    x = preprocess_input(x)
 
     # predict and get output
     preds = model.predict(x)
