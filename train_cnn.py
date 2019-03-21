@@ -21,16 +21,27 @@ import tensorflow as tf
 
 data = DataSet()
 
+import tensorflow.keras.backend as KTF
+
+config = tf.ConfigProto()
+config.gpu_options.allow_growth=True   #dynamic alloc GPU resource
+config.gpu_options.per_process_gpu_memory_fraction = 0.6  #GPU memory threshold 0.3
+session = tf.Session(config=config)
+
+# set session
+KTF.set_session(session)
+
+
 # Helper: Save the model.
 checkpointer = ModelCheckpoint(
-    filepath=os.path.join('data', 'checkpoints', 'mobilenetv2.{epoch:03d}-{val_acc:.2f}.hdf5'),
+    filepath=os.path.join('data', 'checkpoints', 'mobilenetv2.{epoch:03d}-{val_loss:.2f}-{val_acc:.2f}.hdf5'),
     monitor='val_loss',
     verbose=1,
     save_weights_only=False,
     save_best_only=True)
 
 # Helper: Stop when we stop learning.
-early_stopper = EarlyStopping(monitor='val_loss', patience=300)
+early_stopper = EarlyStopping(monitor='val_loss', patience=2000)
 
 # Helper: TensorBoard
 tensorboard = TensorBoard(log_dir=os.path.join('data', 'logs'))
@@ -58,16 +69,17 @@ def my_crop_function(image):
 
 def get_generators():
     train_datagen = ImageDataGenerator(
-        #rescale=1./255,
-        samplewise_std_normalization=True,
+        rescale=1./255,
+        #samplewise_std_normalization=True,
         #shear_range=0.2,
         horizontal_flip=True,
         #rotation_range=10.,
+        #validation_split=0.1,
         width_shift_range=0.2,
         height_shift_range=0.2)
 
-    test_datagen = ImageDataGenerator(#rescale=1./255,
-        samplewise_std_normalization=True)
+    test_datagen = ImageDataGenerator(rescale=1./255)
+        #samplewise_std_normalization=True)
 
     train_generator = train_datagen.flow_from_directory(
         os.path.join('data', 'train'),
@@ -79,7 +91,7 @@ def get_generators():
     validation_generator = test_datagen.flow_from_directory(
         os.path.join('data', 'test'),
         target_size=(224, 224),
-        batch_size=16,
+        batch_size=64,
         classes=data.classes,
         class_mode='categorical')
 
@@ -87,19 +99,21 @@ def get_generators():
 
 def get_model(weights='imagenet'):
     # create the base pre-trained model
-    base_model = MobileNet(input_shape=(224,224,3), weights=weights, pooling='avg', include_top=False)
+    base_model = MobileNet(input_shape=(224,224,3), weights=weights, pooling='avg', include_top=False, alpha=0.5)
 
     # add a global spatial average pooling layer
-    x = base_model.output
-    #x = GlobalAveragePooling2D()(x)
+    x = base_model.get_layer('conv_pw_11_relu').output
+    #x = base_model.output
+    x = GlobalAveragePooling2D()(x)
     # let's add a fully-connected layer
-    #x = Dense(1024, activation='relu')(x)
-    x= Dropout(0.5)(x)
+    #x = Dense(128, activation='relu')(x)
+    x= Dropout(0.2)(x)
     # and a logistic layer
     predictions = Dense(len(data.classes), activation='softmax')(x)
 
     # this is the model we will train
     model = Model(inputs=base_model.input, outputs=predictions)
+    model.summary()
     return model
 
 def freeze_all_but_top(model):
@@ -107,7 +121,7 @@ def freeze_all_but_top(model):
     # first: train only the top layers (which were randomly initialized)
     # i.e. freeze all convolutional InceptionV3 layers
     for layer in model.layers[:-1]:
-        layer.trainable = False
+        layer.trainable = True
 
     # compile the model (should be done *after* setting layers to non-trainable)
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
@@ -151,7 +165,7 @@ def main(weights_file):
         print("Loading network from ImageNet weights.")
         # Get and train the top layers.
         model = freeze_all_but_top(model)
-        model = train_model(model, 1000, generators, [checkpointer, early_stopper, tensorboard])
+        model = train_model(model, 10000, generators, [checkpointer, early_stopper, tensorboard])
     else:
         print("Loading saved model: %s." % weights_file)
         model.load_weights(weights_file)

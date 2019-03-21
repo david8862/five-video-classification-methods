@@ -27,7 +27,7 @@ def get_data(sample_num):
     #random pick samples from classes
     random_images = []
     #images at <Projects>/data/places365
-    class_folders = glob.glob(os.path.join('data', 'places365', '*'))
+    class_folders = glob.glob(os.path.join('data', 'place365', '*'))
     for class_item in class_folders:
         images = glob.glob(os.path.join(class_item, '*.jpg'))
         for _ in range(sample_num):
@@ -37,7 +37,7 @@ def get_data(sample_num):
             random_images.append(image)
     random_images = sorted(random_images)
 
-    classes = glob.glob(os.path.join('data', 'places365', '*'))
+    classes = glob.glob(os.path.join('data', 'place365', '*'))
     classes = sorted([item.split(os.path.sep)[-1] for item in classes])
 
     # get the feature extract model
@@ -67,7 +67,7 @@ def plot_embedding(data, label, title, dim):
         ax = plt.subplot(111)
         for i in range(data.shape[0]):
             plt.text(data[i, 0], data[i, 1], str(label[i]),
-                     color=plt.cm.Set1(label[i] / 10.),
+                     color=plt.cm.Set1(label[i] / 4.),
                      fontdict={'weight': 'bold', 'size': 9})
         plt.xticks([])
         plt.yticks([])

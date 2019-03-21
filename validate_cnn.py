@@ -1,5 +1,7 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
-Classify a few images through our CNN.
+Classify all the test dataset through our CNN to get accuracy.
 """
 import numpy as np
 import operator
@@ -11,8 +13,7 @@ from data import DataSet
 from processor import process_image
 from tensorflow.keras.models import load_model
 
-def validate_cnn_model(model_file, nb_images):
-    """Spot-check `nb_images` images."""
+def validate_cnn_model(model_file):
     data = DataSet()
     model = load_model(model_file)
 
@@ -22,11 +23,11 @@ def validate_cnn_model(model_file, nb_images):
     # Count the correct predict
     result_count = 0
 
-    for _ in range(nb_images):
+    for image in images:
         print('-'*80)
         # Get a random row.
-        sample = random.randint(0, len(images) - 1)
-        image = images[sample]
+        #sample = random.randint(0, len(images) - 1)
+        #image = images[sample]
 
         # Get groundtruth class string
         class_str = image.split(os.path.sep)[-2]
@@ -58,18 +59,18 @@ def validate_cnn_model(model_file, nb_images):
             print("%s: %.2f" % (class_prediction[0], class_prediction[1]))
             i += 1
 
-    print("\nval_acc: %.2f" % (result_count/float(nb_images)))
+    print("\nval_acc: %.2f" % (result_count/float(len(images))))
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model_file', help='model file to predict', type=str)
-    parser.add_argument('--nb_images', help='number of images want to validate, default=50', type=int, default=50)
+
     args = parser.parse_args()
     if not args.model_file:
         raise ValueError('model file is not specified')
 
-    validate_cnn_model(args.model_file, args.nb_images)
+    validate_cnn_model(args.model_file)
 
 
 if __name__ == '__main__':
