@@ -70,7 +70,7 @@ def validate_cnn_model(model_file):
             print("%s: %.2f" % (class_prediction[0], class_prediction[1]))
             i += 1
 
-    print("\nval_acc: %.2f" % (result_count/float(len(images))))
+    print("\nval_acc: %f" % (result_count/float(len(images))))
 
 
 def main():
