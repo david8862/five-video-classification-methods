@@ -1,7 +1,8 @@
 from tensorflow.keras.preprocessing import image
-from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2, preprocess_input
+#from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2, preprocess_input
+from tensorflow.keras.applications.mobilenet import MobileNet, preprocess_input
 from tensorflow.keras.models import Model, load_model
-from tensorflow.keras.layers import Input
+from tensorflow.keras.layers import Input, GlobalAveragePooling2D
 import tensorflow.keras.backend as K
 import numpy as np
 
@@ -14,16 +15,27 @@ class Extractor():
 
         if weights is None:
             # Get model with pretrained weights.
-            base_model = MobileNetV2(
-                weights='imagenet',
-                include_top=True
-            )
+            #base_model = MobileNetV2(
+                #weights='imagenet',
+                #include_top=True
+            #)
 
-            # We'll extract features at the final pool layer.
-            self.model = Model(
-                inputs=base_model.input,
-                outputs=base_model.get_layer('global_average_pooling2d').output
-            )
+            ## We'll extract features at the final pool layer.
+            #self.model = Model(
+                #inputs=base_model.input,
+                #outputs=base_model.get_layer('global_average_pooling2d').output
+            #)
+
+            # create the base pre-trained model
+            base_model = MobileNet(input_shape=(224,224,3), weights='imagenet', pooling='avg', include_top=False, alpha=0.5)
+
+            # add a global spatial average pooling layer
+            features = base_model.get_layer('conv_pw_11_relu').output
+            features = GlobalAveragePooling2D()(features)
+
+            # this is the model we will train
+            self.model = Model(inputs=base_model.input, outputs=features)
+            self.model.summary()
 
         else:
             # Load the model first.

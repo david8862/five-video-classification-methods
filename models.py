@@ -12,7 +12,7 @@ import sys
 
 class ResearchModels():
     def __init__(self, nb_classes, model, seq_length,
-                 saved_model=None, features_length=1280):
+                 saved_model=None, features_length=256):
         """
         `model` = one of:
             lstm

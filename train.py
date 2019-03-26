@@ -22,7 +22,7 @@ def train(data_type, seq_length, model, saved_model=None,
     tb = TensorBoard(log_dir=os.path.join('data', 'logs', model))
 
     # Helper: Stop when we stop learning.
-    early_stopper = EarlyStopping(patience=200)
+    early_stopper = EarlyStopping(patience=2000)
 
     # Helper: Reduce learning rate when no improve.
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.4, patience=40, min_lr=0.0001)
