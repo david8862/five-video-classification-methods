@@ -86,8 +86,12 @@ def fakeRGB_seq_convert(path, dst):
     touchdir(output_class_path)
 
     # Combine output file name and sequence prefix
-    output_seq_prefix = class_name + '_' + file_name_parts[0]
-    output_file_name = output_seq_prefix + '-' + file_name_parts[1] + '.jpg'
+    if len(file_name_parts) == 3:
+        output_seq_prefix = class_name + '_' + file_name_parts[0] + '_' + file_name_parts[1]
+        output_file_name = output_seq_prefix + '-' + file_name_parts[2] + '.jpg'
+    else:
+        output_seq_prefix = class_name + '_' + file_name_parts[0]
+        output_file_name = output_seq_prefix + '-' + file_name_parts[1] + '.jpg'
 
     # Store fakeRGB image to output path
     output_full_path = os.path.join(output_class_path, output_file_name)
