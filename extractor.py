@@ -35,7 +35,7 @@ class Extractor():
 
             # this is the model we will train
             self.model = Model(inputs=base_model.input, outputs=features)
-            self.model.summary()
+            #self.model.summary()
 
         else:
             # Load the model first.

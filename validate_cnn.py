@@ -29,7 +29,7 @@ def validate_cnn_model(model_file):
     model = load_model(model_file)
 
     # Get all our test images.
-    images = glob.glob(os.path.join('data', 'test', '**', '*.jpg'))
+    images = glob.glob(os.path.join('data', 'test_full', '**', '*.jpg'))
 
     # Count the correct predict
     result_count = 0
