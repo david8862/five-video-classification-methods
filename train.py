@@ -47,7 +47,7 @@ def train(data_type, seq_length, model, saved_model=None,
 
     # Get samples per epoch.
     # Multiply by 0.7 to attempt to guess how much of data.data is the train set.
-    steps_per_epoch = (len(data.data) * 0.7) // batch_size
+    steps_per_epoch = int((len(data.data) * 0.7) // batch_size)
 
     if load_to_memory:
         # Get data.
@@ -82,6 +82,7 @@ def train(data_type, seq_length, model, saved_model=None,
             callbacks=[tb, early_stopper, reduce_lr, csv_logger, checkpointer],
             validation_data=val_generator,
             validation_steps=40,
+            use_multiprocessing=True,
             workers=4)
 
 def main():

@@ -20,7 +20,8 @@ import os, argparse
 from data import DataSet
 from extractor import Extractor
 from tensorflow.keras import backend as K
-from tensorflow.contrib.lite.python import interpreter as interpreter_wrapper
+#from tensorflow.contrib.lite.python import interpreter as interpreter_wrapper
+from tensorflow.lite.python import interpreter as interpreter_wrapper
 from utils.common import get_config
 
 K.clear_session()

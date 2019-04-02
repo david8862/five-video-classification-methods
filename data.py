@@ -148,7 +148,7 @@ class DataSet():
 
         return np.array(X), np.array(y)
 
-    @threadsafe_generator
+    #@threadsafe_generator
     def frame_generator(self, batch_size, train_test, data_type):
         """Return a generator that we can use to train on. There are
         a couple different things we can return:
