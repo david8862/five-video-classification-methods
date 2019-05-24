@@ -62,10 +62,11 @@ def get_subplot_size(shape):
 
 
 
-def generate_featuremap(image_file, model_file, featuremap_path):
+def generate_featuremap(image_file, model_file, featuremap_path, model_image_size):
     model = load_model(model_file)
     model.summary()
-    image_arr = process_image(image_file, get_target_size(model)+(3,))
+    image_shape = get_target_size(model) if model_image_size is None else model_image_size
+    image_arr = process_image(image_file, image_shape+(3,))
     image_arr = np.expand_dims(image_arr, axis=0)
 
     # Create featuremap dir
@@ -98,19 +99,20 @@ def generate_featuremap(image_file, model_file, featuremap_path):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--image_file', help='Image file to predict', type=str)
-    parser.add_argument('--model_file', help='model file to get feature map', type=str)
-    parser.add_argument('--featuremap_path', help='dir to store featuremap', type=str)
+    parser.add_argument('--image_file', help='Image file to predict', type=str, required=True)
+    parser.add_argument('--model_file', help='model file to get feature map', type=str, required=True)
+    parser.add_argument('--featuremap_path', help='dir to store featuremap', type=str, required=True)
+    parser.add_argument('--model_image_size', type=str, help='model image input size as <num>x<num>')
 
     args = parser.parse_args()
-    if not args.image_file:
-        raise ValueError('image file is not specified')
-    if not args.model_file:
-        raise ValueError('heatmap file is not specified')
-    if not args.featuremap_path:
-        raise ValueError('featuremap path not specified')
 
-    generate_featuremap(args.image_file, args.model_file, args.featuremap_path)
+    if args.model_image_size:
+        height, width = args.model_image_size.split('x')
+        model_image_size = (int(height), int(width))
+    else:
+        model_image_size = None
+
+    generate_featuremap(args.image_file, args.model_file, args.featuremap_path, model_image_size)
 
 
 if __name__ == '__main__':
